@@ -183,6 +183,7 @@ begin
     end;
     end;
 
+//Procédure appelée lors du clic sur une cellule de la grille de jeu
 procedure TForm1.GrilleDeJeuSelectCell(Sender: TObject; aCol, aRow: Integer;
   var CanSelect: Boolean);
 var

@@ -1,3 +1,4 @@
+//Contient les objets pour les pièces, leurs constructeurs et leurs fonctions "PeutAllerEn()" respectifs
 unit Unit2;
 
 {$mode ObjFPC}{$H+}
@@ -213,6 +214,7 @@ var
   Xinc, Yinc: Integer;
 begin
   Result := False;
+  //Vérifie si le mouvement de la pièce est en diagonale
   if Abs(Xsrc - Xdest) = Abs(Ysrc - Ydest) then
   begin
     Xinc := Sign(Xdest - Xsrc);
