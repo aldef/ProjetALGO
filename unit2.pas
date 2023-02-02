@@ -140,20 +140,22 @@ begin
    end;
 end;
 
-function TTour.PeutAllerEn(Xdest, Ydest: Integer): Boolean;
+//Les algorithmes de TTour.PeutAllerEn() et TFou.PeutAllerEn() sont séparés dans deux autres fonctions
+//Afin de pouvoir les réutiliser pour TReine
+function TourPeutAllerEn(Xsrc, Ysrc, Xdest, Ydest: Integer): Boolean;
 var
   i: Integer;
 begin
-  if (Xdest = Self.X) or (Ydest = Self.Y) then
+  if (Xdest = Xsrc) or (Ydest = Ysrc) then
   begin
     //Si le déplacement de la tour est sur l'axe horizontal
-    if Xdest = Self.X then
+    if Xdest = Xsrc then
     begin
       //Si la destination se trouve au dessus
-      if Ydest > Self.Y then
+      if Ydest > Ysrc then
       begin
-        for i := Self.Y + 1 to Ydest - 1 do
-          if Plateau[Self.X, i] <> nil then
+        for i := Ysrc + 1 to Ydest - 1 do
+          if Plateau[Xsrc, i] <> nil then
           begin
             Result := False;
             Exit;
@@ -162,8 +164,8 @@ begin
       else
       //Si la destination se trouve au dessous
       begin
-        for i := Ydest + 1 to Self.Y - 1 do
-          if Plateau[Self.X, i] <> nil then
+        for i := Ydest + 1 to Ysrc - 1 do
+          if Plateau[Xsrc, i] <> nil then
           begin
             Result := False;
             Exit;
@@ -174,10 +176,10 @@ begin
     //Si le déplacement de la tour est sur l'axe vertical
     begin
       //Si la destination se trouve à droite
-      if Xdest > Self.X then
+      if Xdest > Xsrc then
       begin
-        for i := Self.X + 1 to Xdest - 1 do
-          if Plateau[i, Self.Y] <> nil then
+        for i := Xsrc + 1 to Xdest - 1 do
+          if Plateau[i, Ysrc] <> nil then
           begin
             Result := False;
             Exit;
@@ -186,8 +188,8 @@ begin
       else
       //Si la destination se trouve à gauche
       begin
-        for i := Xdest + 1 to Self.X - 1 do
-          if Plateau[i, Self.Y] <> nil then
+        for i := Xdest + 1 to Xsrc - 1 do
+          if Plateau[i, Ysrc] <> nil then
           begin
             Result := False;
             Exit;
@@ -196,13 +198,56 @@ begin
     end;
 
     //Enfin, vérifier si la pièce de destination n'est pas une pièce de la même couleur
-    if (Plateau[Xdest,Ydest] <> nil) and (Plateau[Xdest,Ydest].estBlanche = Self.estBlanche) then
+    if (Plateau[Xdest,Ydest] <> nil) and (Plateau[Xdest,Ydest].estBlanche = Plateau[Xsrc,Ysrc].estBlanche) then
       Result := False
     else
       Result := True;
   end
   else
     Result := False;
+end;
+
+function FouPeutAllerEn(Xsrc, Ysrc, Xdest, Ydest: Integer): Boolean;
+var
+  i: Integer;
+  Xinc, Yinc: Integer;
+begin
+  Result := False;
+  if Abs(Xsrc - Xdest) = Abs(Ysrc - Ydest) then
+  begin
+    Xinc := Sign(Xdest - Xsrc);
+    Yinc := Sign(Ydest - Ysrc);
+    for i := 1 to Abs(Xsrc - Xdest) - 1 do
+      if Plateau[Xsrc + i * Xinc, Ysrc + i * Yinc] <> nil then
+        Exit;
+    if (Plateau[Xdest,Ydest] = nil) or (Plateau[Xdest,Ydest].estBlanche <> Plateau[Xsrc,Ysrc].estBlanche)
+then
+Result := True;
+end;
+end;
+
+function TTour.PeutAllerEn(Xdest, Ydest: Integer): Boolean;
+begin
+   if TourPeutAllerEn(Self.X, Self.Y, Xdest, Ydest) then
+       Result := True
+   else
+       Result := False;
+end;
+
+function TFou.PeutAllerEn(Xdest, Ydest: Integer): Boolean;
+begin
+   if FouPeutAllerEn(Self.X, Self.Y, Xdest, Ydest) then
+       Result := True
+   else
+       Result := False;
+end;
+
+function TReine.PeutAllerEn(Xdest, Ydest: Integer): Boolean;
+begin
+   if FouPeutAllerEn(Self.X, Self.Y, Xdest, Ydest) or TourPeutAllerEn(Self.X, Self.Y, Xdest, Ydest) then
+      Result := True
+   else
+      Result := False;
 end;
 
 function TCavalier.PeutAllerEn(Xdest, Ydest: Integer): Boolean;
@@ -214,38 +259,6 @@ begin
    end
    else
      Result := False;
-end;
-
-
-
-function TFou.PeutAllerEn(Xdest, Ydest: Integer): Boolean;
-var
-  i: Integer;
-  Xinc, Yinc: Integer;
-begin
-  Result := False;
-  if Abs(Self.X - Xdest) = Abs(Self.Y - Ydest) then
-  begin
-    Xinc := Sign(Xdest - Self.X);
-    Yinc := Sign(Ydest - Self.Y);
-    for i := 1 to Abs(Self.X - Xdest) - 1 do
-      if Plateau[Self.X + i * Xinc, Self.Y + i * Yinc] <> nil then
-        Exit;
-    if (Plateau[Xdest,Ydest] = nil) or (Plateau[Xdest,Ydest].estBlanche <> Self.estBlanche)
-then
-Result := True;
-end;
-end;
-
-function TReine.PeutAllerEn(Xdest, Ydest: Integer): Boolean;
-begin
-   if (Abs(Xdest - Self.X) = Abs(Ydest - Self.Y)) or (Xdest = Self.X) or (Ydest = Self.Y) then
-       if (Plateau[Xdest,Ydest] <> nil) and (Plateau[Xdest,Ydest].estBlanche = Self.estBlanche) then
-         Result := False
-      else
-         Result := True
-   else
-       Result := False;
 end;
 
 function TRoi.PeutAllerEn(Xdest, Ydest: Integer): Boolean;
